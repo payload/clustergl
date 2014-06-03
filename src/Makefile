@@ -20,7 +20,7 @@ OBJS_APP := $(patsubst mod_app.o,,$(OBJS))
 DEPS := $(wildcard include/*.h)
 
 #Compiler flags. Note the arch-specific ones
-CXXFLAGS=$(ARCH) -I/opt/local/include/ -Iinclude -O3 -Wextra -g -fPIC -fvisibility-inlines-hidden
+CXXFLAGS=-std=c++11 $(ARCH) -I/opt/local/include/ -Iinclude -O0 -Wextra -g -fPIC -fvisibility-inlines-hidden
 LDFLAGS=-lconfuse -llzo2 -lz `sdl-config --cflags --libs` -lSDL_net -lconfuse -lGLEW -lpthread
 DARWIN_LDFLAGS=-framework,Cocoa -framework OpenGL -lintl
 LINUX_LDFLAGS=-lGL -lGLU

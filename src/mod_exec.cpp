@@ -26,6 +26,38 @@ int currentBuffer = 0;
 bool glFrustumUsage = true;
 bool bezelCompensation = true;
 
+/*
+
+
+*/
+
+void write_screenshot_to_file() {
+    auto video_surface  = SDL_GetVideoSurface();
+    auto width          = video_surface->w;
+    auto height         = video_surface->h;
+    auto image          = SDL_CreateRGBSurface(
+        SDL_SWSURFACE,
+        width, height,
+        24, 0x000000FF, 0x0000FF00, 0x00FF0000, 0);
+    glReadPixels(
+        0, 0,
+        width, height,
+        GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+    std::stringstream path;
+    path << "screenshot-" << gConfig->id << ".bmp";
+    SDL_SaveBMP(image, path.str().c_str());
+    SDL_FreeSurface(image);
+}
+
+bool true_at_nth_call(unsigned n) {
+    static unsigned x;
+    if (x == 0)
+        x = n+1;
+    if (x > 1)
+        --x;
+    return x == 2;
+}
+
 /*******************************************************************************
 	Module
 *******************************************************************************/
@@ -211,7 +243,6 @@ void pushRet(const GLchar * val)
 	mCurrentInstruction->buffers[currentBuffer].needReply = true;
 }
 
-
 /*******************************************************************************
 	CGL special functions
 *******************************************************************************/
@@ -223,6 +254,10 @@ static void EXEC_CGLSwapBuffers(byte *commandbuf)
 	SDL_GL_SwapBuffers();
 
 	Stats::increment("Rendered frames");
+
+    if (true_at_nth_call(50)) {
+        write_screenshot_to_file();
+    }
 }
 
 
