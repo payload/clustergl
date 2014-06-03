@@ -29,45 +29,45 @@ DuplicateBufferEncodeModule::DuplicateBufferEncodeModule(){
 
 
 bool DuplicateBufferEncodeModule::process(vector<Instruction *> *list){
-	
-	for(int n=0;n<(int)list->size();n++){		
+
+	for(int n=0;n<(int)list->size();n++){
 		Instruction *instr = (*list)[n];
-		
+
 		for(int i=0;i<3;i++){
 			InstructionBuffer *buf = &instr->buffers[i];
-			
+
 			if(!buf->buffer || buf->needReply || buf->len < MIN_BUF_SIZE){
 				buf->hash = 0;
 				continue;
 			}
-			
+
 			int h = hash(buf->buffer, buf->len);
-						
+
 			buf->hash = h;
 			buf->hashlen = buf->len;
-			
+
 			if(mLRU->exists(h)){
-			
+
 				//LOG("Encoding: already had hash %d, freeing buffer (%d)\n", h, buf->len);
-			
+
 				if(buf->needClear){
 					free(buf->buffer);
 				}
-			
+
 				buf->buffer = NULL;
 				buf->len = 0;
 				buf->needClear = false;
 			}else{
 				//LOG("Encoding: adding hash %d!\n", h);
 				mLRU->insert(h,0); //we don't need to copy the actual bytes
-			}	
+			}
 		}
 	}
-		
+
 	mListResult = list;
-	
-	//LOG("Delta: %d from %d\n", list->size() - totalSkip, list->size());		
-			
+
+	//LOG("Delta: %d from %d\n", list->size() - totalSkip, list->size());
+
 	return true;
 }
 
@@ -85,58 +85,58 @@ vector<Instruction *> *DuplicateBufferEncodeModule::resultAsList(){
 *******************************************************************************/
 DuplicateBufferDecodeModule::DuplicateBufferDecodeModule(){
 	mLRU = new lru_cache(MAX_LRU);
-} 
+}
 
 bool DuplicateBufferDecodeModule::process(vector<Instruction *> *list){
 
 	int hitCount = 0;
-	int missCount = 0; 
-				
-	for(int n=0;n<(int)list->size();n++){		
+	int missCount = 0;
+
+	for(int n=0;n<(int)list->size();n++){
 		Instruction *instr = (*list)[n];
-		
+
 		for(int i=0;i<3;i++){
 			InstructionBuffer *buf = &instr->buffers[i];
-			
+
 			if(buf->buffer && buf->hash){
 				//we've got data /and/ a hash. Enter it into the LRU
 				byte *copy = (byte *)malloc(buf->len);
 				memcpy(copy, buf->buffer, buf->len);
-				
+
 				mLRU->insert(buf->hash,copy);
-				
+
 				missCount++;
-				
+
 				//LOG("Added %d to LRU (%d)\n", buf->hash, buf->len);
 				continue;
 			}
-			
+
 			else if(!buf->buffer && buf->hash){
-				
+
 				//No data, but we have a hash. Pull the data from the LRU
 				if(!mLRU->exists(buf->hash)){
 					LOG("ERROR: decode side didn't have hash %d in LRU\n", buf->hash);
 					return false;
 				}
-			
+
 				buf->buffer = mLRU->fetch(buf->hash);
 				buf->len = buf->hashlen;
 				buf->needClear = false; //we'll clean up our own mess
-				
+
 				//LOG("Read %d from LRU (%d)\n", buf->hash, buf->hashlen);
 				hitCount++;
 			}
 		}
 	}
-	
+
 	//LOG("Hit: %d, Miss: %d\n", hitCount, missCount);
-	
+
 	Stats::count("mod_duplicatebuffer hits", hitCount);
 	Stats::count("mod_duplicatebuffer misses", missCount);
 
 	mListResult = list;
-		
-	return true;			
+
+	return true;
 }
 
 //output
@@ -148,7 +148,7 @@ vector<Instruction *> *DuplicateBufferDecodeModule::resultAsList(){
 
 //http://www.azillionmonkeys.com/qed/hash.html
 uint32_t hash(byte *data, int len){
-	
+
 	//Makes it rather a lot faster...if you don't mind inaccuracies
 	//if(len > 64){
 	//	return hash(data, 32) + hash(data, len-32);

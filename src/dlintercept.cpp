@@ -15,9 +15,9 @@ typedef unsigned char GLubyte;
 (notes on what this is and why, as it feels like something I'll forget)
 
 Many apps use glxGetProcAddress() to load function pointers manually
-This means they don't call our functions and so they don't get intercepted. 
+This means they don't call our functions and so they don't get intercepted.
 
-Apps obtain the address of glXGetProcAddress() through calling 
+Apps obtain the address of glXGetProcAddress() through calling
 dlopen("/usr/lib/libGL.so"), then dlsym("glxGetProcAddress") with that handle
 
 We intercept dlsym(), and return our own copy of glXGetProcAddress() instead.
@@ -37,9 +37,9 @@ static void* (*o_dlsym) ( void *handle, const char *name )=0;
 void find_dlsym(){
 
 	char buf[32];
-	
+
 	int maxver = 40;
-	
+
 	//Works on Ubuntu
 	for(int a=0;a<maxver;a++){
 		sprintf(buf, "GLIBC_2.%d", a);
@@ -51,12 +51,12 @@ void find_dlsym(){
 			return;
 		}
 	}
-	
+
 	//Works on Debian
 	for(int a=0;a<maxver;a++){
 		for(int b=0;b<maxver;b++){
 			sprintf(buf, "GLIBC_2.%d.%d", a, b);
-	
+
 			o_dlsym = (void*(*)(void *handle, const char *name)) dlvsym(RTLD_NEXT,"dlsym", buf);
 
 			if(o_dlsym){
@@ -68,7 +68,7 @@ void find_dlsym(){
 
 }
 
-extern "C" void *glXGetProcAddress(const GLubyte * str) { 
+extern "C" void *glXGetProcAddress(const GLubyte * str) {
 	return dlsym(RTLD_DEFAULT, (char *) str);
 }
 
@@ -81,15 +81,15 @@ extern "C" void *dlsym(void *handle, const char *name){
 	if(strcmp(name, "glXGetProcAddressARB") == 0){
 		return (void *)glXGetProcAddressARB;
 	}
-	
+
 	if(strcmp(name, "glXGetProcAddress") == 0){
 		return (void *)glXGetProcAddress;
 	}
-	
+
 	if(!o_dlsym){
 		find_dlsym();
 	}
-		
+
 	return (*o_dlsym)( handle,name );
 }
 

@@ -9,21 +9,21 @@ class Module
 {
 protected:
 	vector<Instruction *> *mListResult;
-	
+
 public:
 	Module(){}
 
     //input
 	virtual bool process(vector<Instruction *> *i){return i != NULL;}
 	virtual bool process(byte *buf, int len){return (buf != NULL && len);}
-	
+
 	//output
 	virtual vector<Instruction *> *resultAsList(){return mListResult;}
-	
+
 	void setListResult(vector<Instruction *> *i){
 		mListResult = i;
 	}
-	
+
 	virtual void reply(Instruction *instr, int i){}
 	virtual bool sync()=0;
 };
@@ -64,7 +64,7 @@ public:
 class ExecModule : public Module
 {
     bool makeWindow();
-    
+
     bool handleViewMode(Instruction *i);
 
 public:
@@ -76,19 +76,19 @@ public:
 };
 
 /*******************************************************************************
- Network server module. This recvs commands and thus should go at the *start* 
+ Network server module. This recvs commands and thus should go at the *start*
  of the local pipeline. Blocks till a client connects.
 *******************************************************************************/
 class NetSrvModule : public Module
 {
     int mSocket;
     BufferedFd *mClientSocket;
-    
+
     int internalRead(byte *input, int nByte);
     int internalWrite(byte *input, int nByte);
-    
+
     void recieveBuffer(void);
-	
+
 public:
 	NetSrvModule();
 
@@ -100,24 +100,24 @@ public:
 
 
 /*******************************************************************************
-  Network client module. This sends commands, and thus should go at the *end* 
+  Network client module. This sends commands, and thus should go at the *end*
   of the local pipe (probably on the app side).
 *******************************************************************************/
 class NetClientModule : public Module
 {
     vector<int> mSockets;
     int numConnections;
-    
+
     int internalWrite(void* buf, int nByte);
 	int internalRead(void *buf, size_t count);
-	
+
 	void sendBuffer();
-	
+
 public:
 	NetClientModule();
 
 	bool process(vector<Instruction *> *i);
-	bool sync();		
+	bool sync();
 };
 
 
@@ -128,12 +128,12 @@ class MulticastSrvModule : public Module
 {
     int mSocket;
     BufferedFd *mClientSocket;
-    
+
     int internalRead(byte *input, int nByte);
     int internalWrite(byte *input, int nByte);
-    
+
     void recieveBuffer(void);
-	
+
 public:
 	MulticastSrvModule();
 
@@ -147,17 +147,17 @@ class MulticastClientModule : public Module
 {
     vector<int> mSockets;
     int numConnections;
-    
+
     int internalWrite(void* buf, int nByte);
 	int internalRead(void *buf, size_t count);
-	
+
 	void sendBuffer();
-	
+
 public:
 	MulticastClientModule();
 
 	bool process(vector<Instruction *> *i);
-	bool sync();		
+	bool sync();
 };
 
 /*******************************************************************************
@@ -199,32 +199,32 @@ public:
 class DeltaEncodeModule : public Module
 {
 	vector<Instruction *> lastFrame;
-	
+
 	Instruction *makeSkip(uint32_t n);
 public:
 	DeltaEncodeModule();
-    
+
     //input
 	bool process(vector<Instruction *> *i);
-	
+
 	//output
 	vector<Instruction *> *resultAsList();
-	
+
 	bool sync(){return true;}
 };
 
 class DeltaDecodeModule : public Module
-{	
+{
 	vector<Instruction *> lastFrame;
 public:
 	DeltaDecodeModule();
-    
+
     //input
 	bool process(vector<Instruction *> *i);
-	
+
 	//output
 	vector<Instruction *> *resultAsList();
-		
+
 	bool sync(){return true;}
 };
 
@@ -233,35 +233,35 @@ public:
 /*******************************************************************************
  DuplicateBuffer module. Keeps a LRU of buffers+hash.
 *******************************************************************************/
-typedef LRUCache<uint32_t,byte *> lru_cache;	
+typedef LRUCache<uint32_t,byte *> lru_cache;
 
 class DuplicateBufferEncodeModule : public Module
 {
 	lru_cache *mLRU;
 public:
 	DuplicateBufferEncodeModule();
-    
+
     //input
 	bool process(vector<Instruction *> *i);
-	
+
 	//output
 	vector<Instruction *> *resultAsList();
-	
+
 	bool sync(){return true;}
 };
 
 class DuplicateBufferDecodeModule : public Module
-{	
+{
 	lru_cache *mLRU;
 public:
 	DuplicateBufferDecodeModule();
-    
+
     //input
 	bool process(vector<Instruction *> *i);
-	
+
 	//output
 	vector<Instruction *> *resultAsList();
-	
+
 	bool sync(){return true;}
 };
 

@@ -5,7 +5,7 @@
 #include "main.h"
 
 
-//Some left-over bradenisms 
+//Some left-over bradenisms
 #define NO_TEX_ENV
 //#define  GLXFULL
 //#define  GLUFULL
@@ -56,14 +56,14 @@ Instruction *mInstructions = mInstructionsOne;
 //the number of instructions so far
 int iInstructionCount = 0;
 
-//the buffer we are currently using 
+//the buffer we are currently using
 //(there are a possible 3 buffers per message)
 int iCurrentBuffer = 0;
 
 //current instruction
 Instruction *mCurrentInstruction = NULL;
 
-//current arguments 
+//current arguments
 byte *mCurrentArgs = NULL;
 
 /*********************************************************
@@ -76,7 +76,7 @@ byte *checkLocalCache(GLenum p){
 		return mLocalCache[p];
 	}
 	return NULL;
-}	
+}
 
 void addLocalCache(GLenum p, byte *buf, int len){
 	byte *b = (byte *)malloc(len);
@@ -86,10 +86,10 @@ void addLocalCache(GLenum p, byte *buf, int len){
 
 //Called at every swapBuffer(), as things are probably no longer valid then
 void clearLocalCache(){
-	for (map<GLenum, byte *>::iterator i = mLocalCache.begin(); 
+	for (map<GLenum, byte *>::iterator i = mLocalCache.begin();
 			i != mLocalCache.end(); i++){
 		free(i->second);
-	}			
+	}
 	mLocalCache.clear();
 }
 
@@ -110,9 +110,9 @@ AppModule::AppModule(string command){
 	rpCol.size = (GLint) NULL;
 	rpInter.size = (GLint) NULL;
 	rpNormals.size = (GLint) NULL;
-	
+
 	LOG("INIT AppModule\n");
-	
+
 	init(command);
 }
 
@@ -128,15 +128,15 @@ bool AppModule::process(vector<Instruction *> *list){
 		list->push_back(&mInstructions[i]);
 		//LOG_INSTRUCTION(&mInstructions[i]);
 	}
-	
+
 	iInstructionCount = 0;
-	
+
 	if(mInstructions == mInstructionsOne){
 		mInstructions = mInstructionsTwo;
 	}else{
 		mInstructions = mInstructionsOne;
 	}
-	
+
 	return true;
 }
 
@@ -166,11 +166,11 @@ void pushOp(uint16_t opID){
 
 	mCurrentInstruction = &mInstructions[iInstructionCount++];
 	iCurrentBuffer = 0;
-	
+
 	mCurrentInstruction->id = opID;
 	mCurrentArgs = mCurrentInstruction->args;
 	mCurrentInstruction->arglen = 0;
-	
+
 	for(int i=0;i<3;i++){
 		mCurrentInstruction->buffers[i].buffer = NULL;
 		mCurrentInstruction->buffers[i].len = 0;
@@ -190,9 +190,9 @@ void pushBuf(const void *buffer, int len, bool needReply = false){
 		LOG("Out of buffer space!\n");
 		return;
 	}
-	
+
 	byte *copy = (byte *)buffer;
-	
+
 	//If we don't need a reply, this buffer cannot be relied upon (probably on
 	//the stack), so we need to copy it
 	//If we *do* need a reply, we're going to block, so it's OK not to copy
@@ -217,9 +217,9 @@ void pushBuf(const void *buffer, int len, bool needReply = false){
 }
 
 void waitForReturn(){
-	
+
 	//LOG_INSTRUCTION(mCurrentInstruction);
-	
+
 	//This is annoying. We need to force a frame end here so that the other end
 	//of the pipeline can get back to us with whatever it is they're going to
 	//do with the return buffer or value
@@ -265,7 +265,7 @@ bool enablePointerDebug = false;
 
 static int hash(byte *data, int len){
 	int r = 0;
-	
+
 	for(int i=0;i<len;i++){
 		r += data[i];
 	}
@@ -277,15 +277,15 @@ int plen(GLenum type, int size, int stride, int length){
 }
 
 void sendPointers(int length) {
-	
-	//TODO: fill in other pointer values, or 
+
+	//TODO: fill in other pointer values, or
 	//create a better, more elegant solution
-	
+
 	//texture pointer
 	for(int i=0;i<GL_MAX_TEXTURES;i++){
 		if(!rpTex[i].sent && rpTex[i].size){
 			int size = plen(rpTex[i].type, rpTex[i].size, rpTex[i].stride, length);
-			
+
 			//We have to operate on the correct texture unit
 			//This makes stuff like multitexturing work properly with VBOs
 			//TODO This will cause an extra glClientActiveTexture() call
@@ -294,7 +294,7 @@ void sendPointers(int length) {
 			//glClientActiveTexture()
 			pushOp(375);
 			pushParam(GL_TEXTURE0 + i); //pretty sure this is okay, carmack does it
-			
+
 			//glTexCoordPointer()
 			pushOp(320);
 			pushParam(rpTex[i].size);
@@ -304,7 +304,7 @@ void sendPointers(int length) {
 			pushBuf(rpTex[i].pointer, size);
 			rpTex[i].sent = true;
 			rpTex[i].pointer = NULL;
-		
+
 			if(enablePointerDebug){
 				LOG("Sending glTexCoordPointer() data %d for texture %d\n", size, i);
 			}
@@ -321,15 +321,15 @@ void sendPointers(int length) {
 		pushParam(false);
 		pushBuf(rpVert.pointer, size);
 		rpVert.sent = true;
-		rpVert.pointer = NULL;	
-		
+		rpVert.pointer = NULL;
+
 		if(enablePointerDebug){
-			LOG("Sending glVertexPointer() data %d, %d, %d, %d = %d\n", 
-				rpVert.size, getTypeSize(rpVert.type), rpVert.stride, 
+			LOG("Sending glVertexPointer() data %d, %d, %d, %d = %d\n",
+				rpVert.size, getTypeSize(rpVert.type), rpVert.stride,
 				length, size);
 		}
 	}
-	
+
 	if(!rpCol.sent && rpCol.size){
 		int size = plen(rpCol.type, rpCol.size, rpCol.stride, length);
 		//colour pointer
@@ -340,8 +340,8 @@ void sendPointers(int length) {
 		pushParam(false);
 		pushBuf(rpCol.pointer, size);
 		rpCol.sent = true;
-		rpCol.pointer = NULL;		
-		
+		rpCol.pointer = NULL;
+
 		if(enablePointerDebug){
 			LOG("Sending glColorPointer() data %d %d\n", length, size);
 		}
@@ -351,7 +351,7 @@ void sendPointers(int length) {
 	{
 		//interleaved arrays pointer
 		int size = 0;
-		switch (rpInter.type) 
+		switch (rpInter.type)
 		{
 			case GL_V2F:			size = sizeof(GLfloat) * 2; break;
 	        case GL_V3F:			size = sizeof(GLfloat) * 3; break;
@@ -376,7 +376,7 @@ void sendPointers(int length) {
 		pushBuf(rpInter.pointer, ((size + rpInter.stride) * length)); //drawing quads?
 		rpInter.sent = true;
 	}
-	
+
 	if(!rpNormals.sent && rpNormals.size){
 		int size = plen(rpNormals.type, rpNormals.size, rpNormals.stride, length);
 		//colour pointer
@@ -419,19 +419,19 @@ bool bHasInit = false;
 
 
 extern "C" int SDL_Init(unsigned int flags) {
-	
+
 	LOG("SDL_Init (%d, %d)\n", theApp != NULL, bHasInit);
 	if (_SDL_Init == NULL) {
 		_SDL_Init = (int (*)(unsigned int)) dlsym(RTLD_NEXT, "SDL_Init");
 	}
-		
+
 	if(!_SDL_Init){
 		printf("Couldn't find SDL_Init: %s\n", dlerror());
 		exit(0);
 	}
-	
+
 	int r = (*_SDL_Init)(flags);
-				
+
 	//Set up our internals
 	if(!theApp && !bHasInit){
 		bHasInit = true;
@@ -442,22 +442,22 @@ extern "C" int SDL_Init(unsigned int flags) {
 	}else{
 		LOG("Ignored a second/non-video SDL_Init()\n");
 	}
-	
+
 	//LOG("SDL_Init finished\n");
 	return r;
 }
 
 extern "C" void SDL_GL_SwapBuffers( ) {
-	
+
 	//if(!bHasMinimized){
 	// if (SDL_WM_IconifyWindow()==0)
 	//	LOG("Could not minimize Window\n");
 	//  bHasMinimized = true;
 	//}
-	
-	
+
+
 	pushOp(1499); //Swap buffers
-	
+
 	clearLocalCache();
 
 	if(!theApp->tick()){
@@ -514,14 +514,14 @@ extern "C" void *SDL_GL_GetProcAddress(const char* proc) {
 }
 
 extern "C" void SDL_GL_SwapBuffers( ) {
-	
+
 	//if(!bHasMinimized){
 	// if (SDL_WM_IconifyWindow()==0)
 	//	LOG("Could not minimize Window\n");
 	//  bHasMinimized = true;
 	//}
-	
-	
+
+
 	pushOp(1499); //Swap buffers
 
 	if(!theApp->tick()){
@@ -542,18 +542,18 @@ extern "C" int glXMakeCurrent( Display *dpy, GLXDrawable drawable, GLXContext ct
 	if (_glXMakeCurrent == NULL) {
 		_glXMakeCurrent = (int (*)( Display*, GLXDrawable, GLXContext)) dlsym(RTLD_NEXT, "glXMakeCurrent");
 	}
-	
+
 	if(!_glXMakeCurrent) {
 		printf("Couldn't find glXMakeCurrent: %s\n", dlerror());
 		exit(0);
 	}
-	
+
 	int temp = (*_glXMakeCurrent) (dpy, drawable, ctx);
-	
+
 	if(!bIsIntercept){
 		return temp;
 	}
-			
+
 	//Set up our internals
 	if(!theApp && !bHasInit){
 		bHasInit = true;
@@ -562,7 +562,7 @@ extern "C" int glXMakeCurrent( Display *dpy, GLXDrawable drawable, GLXContext ct
 			delete theApp;
 		}
 	}
-	
+
 	return temp;
 }
 
@@ -573,14 +573,14 @@ extern "C" Display *XOpenDisplay(const char *display_name){
 	if (_XOpenDisplay == NULL) {
 		_XOpenDisplay = (Display *(*)(const char *)) dlsym(RTLD_NEXT, "XOpenDisplay");
 	}
-		
+
 	if(!_XOpenDisplay){
 		printf("Couldn't find XOpenDisplay(): %s\n", dlerror());
 		exit(0);
 	}
-	
+
 	Display *r = (*_XOpenDisplay)(display_name);
-		
+
 	//Set up our internals
 	if(!theApp && !bHasInit){
 		bHasInit = true;
@@ -599,25 +599,25 @@ extern "C" void glXSwapBuffers(Display *  dpy,  GLXDrawable  drawable){
 	if (_glXSwapBuffers == NULL) {
 		_glXSwapBuffers = (void (*)(Display *, GLXDrawable)) dlsym(RTLD_NEXT, "glXSwapBuffers");
 	}
-	
+
 	if(!_glXSwapBuffers){
 		printf("Couldn't find glXSwapBuffers(): %s\n", dlerror());
 		exit(0);
 	}
-	
+
 	(*_glXSwapBuffers)(dpy, drawable);
-		
+
 	if(!bIsIntercept){
 		return;
 	}
-			
+
 	pushOp(1499); //Swap buffers
-	
+
 	clearLocalCache();
-	
+
 	if(theApp && !theApp->tick()){
 		exit(1);
-	}	
+	}
 }
 
 #endif
@@ -653,14 +653,14 @@ extern "C" void glCallLists(GLsizei n, GLenum type, const GLvoid * lists){
 	}
 
 	//LOG("glCallLists(%d, %d)\n", n, type);
-	
+
 	pushOp(3);
 	pushParam(n);
 	pushParam(type);
-	
+
 	int bufsize = getTypeSize(type) * n;
-	
-			
+
+
 	pushBuf(lists, bufsize);
 }
 
@@ -1725,7 +1725,7 @@ extern "C" void glFogfv(GLenum pname, const GLfloat * params){
 	int size = sizeof(const GLfloat);
 	if (pname == GL_FOG_COLOR) 	//if its GL_FOG_COLOR
 		size *= 4; 		//Colour takes an array of 4 values, the rest are just 1 value
-	pushBuf(params, size); 
+	pushBuf(params, size);
 }
 
 //155
@@ -1742,9 +1742,9 @@ extern "C" void glFogiv(GLenum pname, const GLint * params){
 	pushParam(pname);
 	int size = sizeof(const GLint);
 	if(pname == GL_FOG_COLOR)
-		size *= 4;  
-		pushBuf(params, size);  
-         
+		size *= 4;
+		pushBuf(params, size);
+
 }
 
 //157
@@ -1774,8 +1774,8 @@ extern "C" void glLightfv(GLenum light, GLenum pname, const GLfloat * params){
 	pushParam(light);
 	pushParam(pname);
 	pushBuf(params, sizeof(const GLfloat) * getLightParamSize(pname));
-	
-	
+
+
 }
 
 //161
@@ -1903,7 +1903,7 @@ extern "C" void glScissor(GLint x, GLint y, GLsizei width, GLsizei height){
 //177
 extern "C" void glShadeModel(GLenum mode){
 	pushOp(177);
-	pushParam(mode);	
+	pushParam(mode);
 }
 
 //178
@@ -1967,15 +1967,15 @@ extern "C" void glTexImage2D(GLenum target, GLint level, GLint internalformat, G
     pushParam(border);
     pushParam(format);
     pushParam(type);
-    
+
     //if(pixels) {
 	pushParam(true);
-	
+
 	//int len = getFormatSize(format) * getTypeSize(type) * width * height;// * getTypeSize(type);
 	int len = getFormatSize(format) * width * height;
-	
+
 	//LOG("glTexImage2D: %d/%d, %d %d\n", width, height, len, getFormatSize(format));
-	
+
 	pushBuf(pixels, len);
 //	}
  //   else {
@@ -2050,8 +2050,8 @@ extern "C" void glTexGenfv(GLenum coord, GLenum pname, const GLfloat * params){
 	pushParam(pname);
 	int size = sizeof(const GLfloat);
 	if (pname == 9473 || pname == 9474) //GL_EYE_PLANE or GL_OBJECT_PLANE
-		size *= 4; 
-	pushBuf(params, size); 
+		size *= 4;
+	pushBuf(params, size);
 }
 
 //192
@@ -2185,7 +2185,7 @@ extern "C" void glStencilMask(GLuint mask){
 //210
 extern "C" void glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha){
 	//disabled for openarena, as it screws things up (unsure why)
-	//LOG("********210*********\n");	
+	//LOG("********210*********\n");
 	/*pushOp(210);
 	pushParam(red);
 	pushParam(green);
@@ -2548,16 +2548,16 @@ extern "C" void glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GL
 	pushParam(height);
 	pushParam(format);
 	pushParam(type);
-	
-	
-    
+
+
+
     int bpp = 1;
-    
+
     if(format == GL_BGR || format == GL_RGB) bpp = 3;
     else if(format == GL_RGBA || format == GL_BGRA) bpp = 4;
-	
+
 	pushBuf(pixels, width * height * bpp, true);
-	
+
 	waitForReturn();
 }
 
@@ -2574,9 +2574,9 @@ extern "C" void glDrawPixels(GLsizei width, GLsizei height, GLenum format, GLenu
 
 //258
 extern "C" void glGetBooleanv(GLenum pname, GLboolean * params){
-	
+
 	LOG("Called untested stub GetBooleanv!\n");
-	
+
 	pushOp(258);
 	pushParam(pname);
 	pushBuf(params, sizeof(GLboolean) * getGetSize(pname), true);
@@ -2596,7 +2596,7 @@ extern "C" void glGetClipPlane(GLenum plane, GLdouble * equation){
 //260
 extern "C" void glGetDoublev(GLenum pname, GLdouble * params){
 	LOG("Called untested stub GetDoublev!\n");
-	
+
 	pushOp(260);
 	pushParam(pname);
 	pushBuf(params, sizeof(GLdouble) * getGetSize(pname), true);
@@ -2613,7 +2613,7 @@ extern "C" GLenum glGetError(){
 	GLenum ret;
 	pushBuf(&ret, sizeof(GLenum), true);
 	waitForReturn();
-	//if(ret == GL_NO_ERROR)	
+	//if(ret == GL_NO_ERROR)
 	//	LOG("GL_NO_ERROR\n");
 	if(ret == GL_INVALID_ENUM){
 		LOG("GL_INVALID_ENUM\n");
@@ -2644,7 +2644,7 @@ extern "C" GLenum glGetError(){
 
 extern "C" void glGetFloatv(GLenum pname, GLfloat * params){
 	//LOG("Called untested stub glGetFloatv!\n");
-	
+
 	int size = sizeof(GLfloat) * getGetSize(pname);
 	/*
 	byte *b = checkLocalCache(pname);
@@ -2654,14 +2654,14 @@ extern "C" void glGetFloatv(GLenum pname, GLfloat * params){
 		return;
 	}
 	*/
-	
+
 	//LOG("glGetFloatv(%s, %d)\n", getGLParamName(pname), pname);
-	
+
 	pushOp(262);
 	pushParam(pname);
-	pushBuf(params, size, true);	
+	pushBuf(params, size, true);
 	waitForReturn();
-	
+
 	//addLocalCache(pname, (byte *)params, size);
 }
 //#endif
@@ -2787,7 +2787,7 @@ extern "C" const GLubyte * glGetString(GLenum name){
 	pushParam(name);
 
 	//currently glGetString returns 3379 characters on my machine
-	GLubyte * ret = (GLubyte *)malloc(sizeof(GLubyte *)*4096);	
+	GLubyte * ret = (GLubyte *)malloc(sizeof(GLubyte *)*4096);
 
 	for(int i=0;i<4096;i++){
 		ret[i] = 0;
@@ -2851,7 +2851,7 @@ extern "C" void glGetTexLevelParameterfv(GLenum target, GLint level, GLenum pnam
 //285
 extern "C" void glGetTexLevelParameteriv(GLenum target, GLint level, GLenum pname, GLint * params){
 	//LOG("Called testing stub GetTexLevelParameteriv!\n");
-	
+
 	pushOp(285);
 	pushParam(target);
 	pushParam(level);
@@ -2943,7 +2943,7 @@ extern "C" void glMultMatrixf(const GLfloat * m){
 //295
 extern "C" void glMultMatrixd(const GLdouble * m){
 	pushOp(295);
-	pushBuf(m, sizeof(const GLdouble) * 16); 
+	pushBuf(m, sizeof(const GLdouble) * 16);
 }
 
 //296
@@ -3024,7 +3024,7 @@ extern "C" void glViewport(GLint x, GLint y, GLsizei width, GLsizei height){
 	pushParam(y);
 	pushParam(width);
 	pushParam(height);
-	//LOG("glViewport %d %d %d %d\n", x, y, width, height); 
+	//LOG("glViewport %d %d %d %d\n", x, y, width, height);
 }
 
 //306
@@ -3065,14 +3065,14 @@ extern "C" void glColorPointer(GLint size, GLenum type, GLsizei stride, const GL
 //309
 extern "C" void glDisableClientState(GLenum array){
 	pushOp(309);
-	pushParam(array);		
+	pushParam(array);
 }
 
 //310
 extern "C" void glDrawArrays(GLenum mode, GLint first, GLsizei count){
 
 	//enablePointerDebug = true;
-	
+
 	//send the pointers
 	sendPointers(count + first);
 	//draw arrays
@@ -3091,11 +3091,11 @@ extern "C" void glDrawElements(GLenum mode, GLsizei count, GLenum type, const GL
 	pushParam(mode);
 	pushParam(count);
 	pushParam(type);
-	
+
 	int len = count * getTypeSize(type);
-	
+
 //	LOG("glDrawElements %d %d %d\n", count, len, hash((byte *)indices, len));
-	
+
 	pushBuf(indices, len);
 }
 
@@ -3107,7 +3107,7 @@ extern "C" void glEdgeFlagPointer(GLsizei stride, const GLvoid * pointer){
 //313
 extern "C" void glEnableClientState(GLenum array){
 	pushOp(313);
-	pushParam(array);	
+	pushParam(array);
 }
 
 //314
@@ -3177,7 +3177,7 @@ extern "C" void glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const
 	//if(type == GL_SHORT){
 		//LOG("glTexCoordPointer(%d, %s, %d, 0x%x)\n", size, getGLParamName(type), stride, (int)pointer);
 	//}
-	
+
 	if(!pointer) {
 		pushOp(320);
 		pushParam(size);
@@ -3186,9 +3186,9 @@ extern "C" void glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const
 		pushParam(!pointer);
 		pushParam(true);
 	}else{
-	
+
 		int i = iCurrentActiveTextureUnit;
-	
+
 		rpTex[i].size = size;
 		rpTex[i].type = type;
 		rpTex[i].stride = stride;
@@ -3457,7 +3457,7 @@ extern "C" void glColorSubTable(GLenum target, GLsizei start, GLsizei count, GLe
 	pushParam(count);
 	pushParam(format);
 	pushParam(type);
-	pushBuf(data, getFormatSize(format) * getTypeSize(type) * (start + count));	
+	pushBuf(data, getFormatSize(format) * getTypeSize(type) * (start + count));
 }
 
 //347
@@ -3534,7 +3534,7 @@ extern "C" void glConvolutionParameteriv(GLenum target, GLenum pname, const GLin
 	if(pname != GL_CONVOLUTION_BORDER_MODE)
 		size *= 4;
 	pushBuf(params, size);
-	
+
 }
 
 //354
@@ -3746,7 +3746,7 @@ extern "C" void glActiveTexture(GLenum texture){
 extern "C" void glClientActiveTexture(GLenum texture){
 	pushOp(375);
 	pushParam(texture);
-	
+
 	iCurrentActiveTextureUnit = texture - GL_TEXTURE0;
 }
 
@@ -6624,7 +6624,7 @@ extern "C" void glBindBufferARB(GLenum target, GLuint buffer){
 extern "C" void glBufferDataARB(GLenum target, GLsizeiptrARB size, const GLvoid * data, GLenum usage){
 	pushOp(725);
 	pushParam(target);
-	pushParam((GLuint)size);		
+	pushParam((GLuint)size);
 	pushBuf(data, size);
 	pushParam(usage);
 }
@@ -7093,7 +7093,7 @@ extern "C" void glGetInfoLogARB(GLhandleARB obj, GLsizei maxLength, GLsizei * le
 	pushParam(*length);
 	pushBuf(infoLog, maxLength * sizeof(GLcharARB), true);
 	waitForReturn();
-	
+
 	*length = strlen(infoLog);
 	//BAD HACK*/
 	*length = 0;
@@ -8625,10 +8625,10 @@ extern "C" void glMultiDrawArraysEXT(GLenum mode, GLint * first, GLsizei * count
 	LOG("Called untested stub MultiDrawArraysEXT!\n");
 	pushOp(956);
 	pushParam(mode);
-	pushBuf(first, primcount);	
-	pushBuf(count, primcount) ;	
+	pushBuf(first, primcount);
+	pushBuf(count, primcount) ;
 	pushParam(primcount);
-	
+
 }
 
 //957
@@ -11461,7 +11461,7 @@ extern "C" Display *glXGetCurrentDisplay( void ) {
 LOG("Called unimplemted stub glXGetCurrentDisplay!\n");
 }
 
-// GLX 1.3 and later 
+// GLX 1.3 and later
 //1622
 extern "C" GLXFBConfig *glXChooseFBConfig( Display *dpy, int screen, const int *attribList, int *nitems ) {
 LOG("Called unimplemted stub glXChooseFBConfig!\n");
@@ -11561,7 +11561,7 @@ extern "C" __GLXextFuncPtr glXGetProcAddressARB (const GLubyte * str) {
 	return (__GLXextFuncPtr) dlsym(handle, (char *) str);
 	/*
 	dlhandle = dlopen("libGL.so", RTLD_LAZY);
-	
+
 	if (_glXGetProcAddressARB == NULL) {
 		_glXGetProcAddressARB = (__GLXextFuncPtr (*)(const GLubyte *))  dlsym(dlhandle, "glXGetProcAddressARB");
 	}

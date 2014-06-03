@@ -17,11 +17,11 @@ void LOG_INSTRUCTION(Instruction *iter){
 		LOG("(null instruction)\n");
 		return;
 	}
-	
+
 	if(!hasSetup){
 		setupPointers();
 	}
-	
+
 	if(iter->id < 1500){
 		mFunctions[iter->id](iter->args);
 	}else{
@@ -13443,6 +13443,6 @@ void setupPointers(){
 
 	mFunctions[1498] = EXEC_CGLRepeat;
 	mFunctions[1499] = EXEC_CGLSwapBuffers;
-	
+
 	hasSetup = true;
 }

@@ -21,25 +21,25 @@ void handleViewport(Instruction *iter);
 bool ExecModule::handleViewMode(Instruction *iter){
 	//We override some methods here for view adjustment
 	//TODO: Clean this up some more
-	
-	if(gConfig->viewMode == VIEWMODE_VIEWPORT){	
+
+	if(gConfig->viewMode == VIEWMODE_VIEWPORT){
 		if (iter->id == 305) { //glViewPort
 			handleViewport(iter);
 			return true;
 		}
 	}else if(gConfig->viewMode == VIEWMODE_CURVE){
-		
+
 		if (iter->id == 305) { //glViewPort
-			glViewport(0, 0, 
+			glViewport(0, 0,
 				gConfig->totalWidth, gConfig->totalHeight);
 			return true;
 		}
-		
+
 		if (iter->id == 290) { //glLoadIdentity
-		
+
 			if(currentMode == GL_MODELVIEW){
 				glLoadIdentity();
-				glRotatef(gConfig->angle, 0, 1, 0);			
+				glRotatef(gConfig->angle, 0, 1, 0);
 				return true;
 			}
 		}
@@ -72,25 +72,25 @@ void handleViewport(Instruction *iter){
 		return
 	}
 */
-	
+
 	float magic = 1800;
-	
+
 	GLint x = *((GLint*)iter->args);
 	GLint y = *((GLint*)(iter->args+ sizeof(GLint)));
 	GLsizei w = *((GLsizei*)(iter->args+ sizeof(GLint)*2));
 	GLsizei h = *((GLsizei*)(iter->args+ sizeof(GLint)*2+ sizeof(GLsizei)));
-	
-	glViewport(-gConfig->offsetX*gConfig->scaleX,-gConfig->offsetY*gConfig->scaleY, 
+
+	glViewport(-gConfig->offsetX*gConfig->scaleX,-gConfig->offsetY*gConfig->scaleY,
 				gConfig->totalWidth*gConfig->scaleX, gConfig->totalHeight*gConfig->scaleY);
 	//glViewport(x,y,w,h);
-	
-	
+
+
 	//if(bezelCompensation){
 
 	//}else{
 	//	glViewport((-offsetX*screenWidth)/magic,0, gConfig->totalWidth, 4560*3.0/4.0);
 	//}
-	
+
 	//LOG("handleViewport(%d,%d,%d,%d)\n",x,y,w,h);
 }
 
@@ -104,12 +104,12 @@ void handleScissor(Instruction *iter){
 	//LOG("glScissor values %d %d %d %d\n", x, y, w, h);
 
 	glScissor(0, 0, gConfig->totalWidth, gConfig->totalHeight);
-	
+
 	LOG("handleScissor\n");
 }
 
 void handleOrtho(Instruction *iter){
-	
+
 	//read original values from the instruction
 	GLdouble left = *((GLdouble*)iter->args);
 	GLdouble right = *((GLdouble*)(iter->args+ sizeof(GLdouble)));
@@ -125,38 +125,38 @@ void handleOrtho(Instruction *iter){
 	GLdouble bezelWidth 	= 	totalWidth * (gConfig->screenGap / gConfig->totalWidth);
 
 	GLdouble startingPoint = left + (displayNumber * (singleWidth + bezelWidth));
-	
+
 	//if ratio is correct, do nothing
-	if(right/bottom == (double)gConfig->sizeX/gConfig->sizeY || 
+	if(right/bottom == (double)gConfig->sizeX/gConfig->sizeY ||
 		right/top == (double)gConfig->sizeX/gConfig->sizeY){
-		glOrtho(startingPoint, 
-				startingPoint + singleWidth, 
-				bottom, 
-				top, 
-				nearVal, 
+		glOrtho(startingPoint,
+				startingPoint + singleWidth,
+				bottom,
+				top,
+				nearVal,
 				farVal);
 	}
-		
+
 	//if ratio incorrect, adjust so things dont get stretched
-	else{			
+	else{
 		if(bottom > 0){
-			glOrtho(startingPoint, 
-					startingPoint + singleWidth, 
-					right * gConfig->totalHeight/gConfig->totalWidth, 
-					top, 
-					nearVal, 
+			glOrtho(startingPoint,
+					startingPoint + singleWidth,
+					right * gConfig->totalHeight/gConfig->totalWidth,
+					top,
+					nearVal,
 					farVal);
 		}else{
-			glOrtho(startingPoint, 
-					startingPoint + singleWidth, 
-					bottom, 
-					right * gConfig->totalHeight/gConfig->totalWidth, 
-					nearVal, 
+			glOrtho(startingPoint,
+					startingPoint + singleWidth,
+					bottom,
+					right * gConfig->totalHeight/gConfig->totalWidth,
+					nearVal,
 					farVal);
-			
+
 		}
 	}
-	
+
 	/*
 	else {
 						 //if ratio is correct, do nothing
@@ -168,7 +168,7 @@ void handleOrtho(Instruction *iter){
 		}
 	}
 	*/
-	
+
 	LOG("handleOrtho\n");
 }
 
@@ -182,7 +182,7 @@ void handlePerspective(Instruction *iter){
 #endif
 		return;
 	}
-	
+
 	//read original values from the instruction
 	GLdouble fovy = *((GLdouble*)iter->args);
 	GLdouble aspect = *((GLdouble*)(iter->args+ sizeof(GLdouble)));
@@ -209,7 +209,7 @@ void handlePerspective(Instruction *iter){
 
 	const GLdouble pi = 3.1415926535897932384626433832795;
 	GLdouble fW, fH;
-	
+
 	//calculate height, then adjust according to how different the
 	//programs aspect ratio and our ratio is
 	//fW and fH are the equivalent glFrustum calculations using the gluPerspective values
@@ -222,12 +222,12 @@ void handlePerspective(Instruction *iter){
 	GLdouble bezelWidth = totalWidth * (gConfig->screenGap / gConfig->totalWidth);
 	if(!bezelCompensation) {
 		singleWidth = totalWidth * ((gConfig->screenWidth + gConfig->screenGap) / gConfig->totalWidth);
-		bezelWidth = 0;					
+		bezelWidth = 0;
 	}
 	GLdouble startingPoint = -fW + (displayNumber * (singleWidth + bezelWidth));
 
 	glFrustum(startingPoint, startingPoint + singleWidth, -fH, fH, zNear, zFar);
-	
+
 	/*
 	else {
 		fH = tan( (fovy / 360.0) * pi ) * scaleY * zNear * (1.0/((sizeX * 1.0/sizeY) / aspect));
@@ -238,7 +238,7 @@ void handlePerspective(Instruction *iter){
 		//gluPerspective(fovy, aspect, zNear, zFar);
 	}
 	*/
-	
+
 	LOG("handlePerspective\n");
 }
 
@@ -262,7 +262,7 @@ void handleLoadMatrix(Instruction *iter){
 	else {
 		glLoadMatrixf(m);
 	}
-	
+
 	LOG("handleLoadMatrix\n");
 }
 

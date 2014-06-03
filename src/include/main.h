@@ -39,12 +39,12 @@ public:
 class App
 {
 	vector<Module *> mModules;
-	
+
 	void init(bool shared, const char *id);
-	
+
 	void stats_begin();
 	void stats_end();
-		    	
+
 public:
 
 	//called when we're invoked from the command line

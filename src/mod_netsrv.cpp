@@ -52,7 +52,7 @@ NetSrvModule::NetSrvModule()
 		LOG("Failed to listen on server socket\n");
 		exit(1);
 	}
-	
+
 	LOG("Waiting for connection on port %d\n", gConfig->serverPort);
 
 	unsigned int clientlen = sizeof(clientaddr);
@@ -76,7 +76,7 @@ bool NetSrvModule::process(vector<Instruction *> *list)
 	//Read instructions off the network and insert them into the list
 	//First read the uint32 that tells us how many instructions we will have
 	uint32_t num = 0;
-	
+
 	iInstructionCount = 0;
 
 	int len = internalRead((byte *)&num, sizeof(uint32_t));
@@ -84,12 +84,12 @@ bool NetSrvModule::process(vector<Instruction *> *list)
 		LOG("Read error\n");
 		return false;
 	}
-	
+
 	//LOG("Reading %d instructions\n", num);
 
 	for(uint32_t x=0;x<num;x++) {
 		Instruction *i = &mInstructions[iInstructionCount++];
-		
+
 		//first the length byte
 		/*
 		byte l;
@@ -105,38 +105,38 @@ bool NetSrvModule::process(vector<Instruction *> *list)
 			return false;
 		}
 		*/
-		
+
 		int l = sizeof(Instruction);
 		int r = internalRead((byte *)i, l);
 		if(r != l) {
 			LOG("Read error 2 (%d, %d)\n", r, l);
 			return false;
 		}
-		
-		//LOG_INSTRUCTION(i);	
+
+		//LOG_INSTRUCTION(i);
 
 		//Now see if we're expecting any buffers
 		for(int n=0;n<3;n++) {
 			int l = i->buffers[n].len;
-			
-			//LOG("%d - %d\n", n, l);	
 
-			if(l > 0) {				
+			//LOG("%d - %d\n", n, l);
+
+			if(l > 0) {
 				i->buffers[n].buffer = (byte *) malloc(l);
-				i->buffers[n].needClear = true;				
+				i->buffers[n].needClear = true;
 				i->buffers[n].needRemoteReply = i->buffers[n].needReply;
-				
-				internalRead(i->buffers[n].buffer, l);						
+
+				internalRead(i->buffers[n].buffer, l);
 			}
-		}		
-	
-		list->push_back(i);	
-		
+		}
+
+		list->push_back(i);
+
 		//LOG_INSTRUCTION(i);
-		
-		//LOG("  \n");	
+
+		//LOG("  \n");
 	}
-	
+
 	//LOG("Done\n\n");
 
 	if(totalRead == 0){
@@ -144,12 +144,12 @@ bool NetSrvModule::process(vector<Instruction *> *list)
 		LOG("Connection dropped\n");
 		return false;
 	}
-	
+
 	Stats::count("mod_netsrv read bytes", totalRead);
 	Stats::increment("mod_netsrv read bytes", totalRead);
-	
+
 	totalRead = 0;
-		
+
 	return true;
 }
 
@@ -165,7 +165,7 @@ void NetSrvModule::reply(Instruction *instr, int i)
 *********************************************************/
 
 bool NetSrvModule::sync()
-{	
+{
 /*
 	if(mClientSocket->read((byte *)&a, sizeof(uint32_t)) != sizeof(uint32_t)) {
 		LOG("Connection problem NetSrvModule (didn't recv sync)!\n");
@@ -175,7 +175,7 @@ bool NetSrvModule::sync()
 		LOG("Connection problem NetSrvModule (didn't send sync)!\n");
 		return false;
 	}
-*/	
+*/
 
 	return true;
 }
@@ -188,11 +188,11 @@ bool NetSrvModule::sync()
 int NetSrvModule::internalRead(byte *input, int nByte)
 {
 	//LOG("Read: %d (%d)\n", nByte, bytesRemaining);
-	
+
 	if(bytesRemaining <= 0){
 		recieveBuffer();
 	}
-	
+
 	memcpy(input, mRecieveBuf + iRecieveBufPos, nByte);
 	iRecieveBufPos += nByte;
 	bytesRemaining -= nByte;
@@ -202,15 +202,15 @@ int NetSrvModule::internalRead(byte *input, int nByte)
 
 
 void NetSrvModule::recieveBuffer(void)
-{	
-	int compSize = 0;	
-	
+{
+	int compSize = 0;
+
 	//first read the original number of bytes coming
 	mClientSocket->read((byte *)&bytesRemaining, sizeof(uint32_t));
-	
+
 	//LOG("Reading %d\n", bytesRemaining);
 	totalRead += bytesRemaining;
-	
+
 	//then read the buffer
 	if(gConfig->networkCompression){
 		int n = mClientSocket->read(Compression::getBuf(), bytesRemaining);
@@ -219,11 +219,11 @@ void NetSrvModule::recieveBuffer(void)
 		mClientSocket->read(mRecieveBuf, bytesRemaining);
 	}
 	iRecieveBufPos = 0;
-	
+
 	//LOG("bytesRemaining = %d\n", bytesRemaining);
-	
+
 	totalRead += sizeof(uint32_t);
-	
+
 	//LOG("read ok\n");
 }
 

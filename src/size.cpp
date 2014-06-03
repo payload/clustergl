@@ -8,11 +8,11 @@
 int getTextureParamSize(GLenum type){
 	switch(type)
 	{
-	case GL_TEXTURE_WIDTH: return 1;    
-	case GL_TEXTURE_HEIGHT: return 1;   
-	case GL_TEXTURE_DEPTH: return 1;   
-	case GL_TEXTURE_INTERNAL_FORMAT: return 1;  
-	case GL_TEXTURE_BORDER: return 1;   
+	case GL_TEXTURE_WIDTH: return 1;
+	case GL_TEXTURE_HEIGHT: return 1;
+	case GL_TEXTURE_DEPTH: return 1;
+	case GL_TEXTURE_INTERNAL_FORMAT: return 1;
+	case GL_TEXTURE_BORDER: return 1;
 	case GL_TEXTURE_RED_SIZE: return 1;
 	case GL_TEXTURE_BLUE_SIZE: return 1;
 	case GL_TEXTURE_ALPHA_SIZE: return 1;
@@ -57,7 +57,7 @@ int getGetSize(GLenum type){
 	case GL_CLIENT_ATTRIB_STACK_DEPTH: return 1;
 	case GL_CLIP_PLANE0: return 1;
 	case GL_CLIP_PLANE1: return 1;
-	case GL_CLIP_PLANE2: return 1;		
+	case GL_CLIP_PLANE2: return 1;
 	case GL_CLIP_PLANE3: return 1;
 	case GL_CLIP_PLANE4: return 1;
 	case GL_CLIP_PLANE5: return 1;
@@ -113,10 +113,10 @@ int getGetSize(GLenum type){
 	case GL_DRAW_BUFFER4: return 1;
 	case GL_DRAW_BUFFER5: return 1;
 	case GL_DRAW_BUFFER6: return 1;
-	case GL_DRAW_BUFFER7: return 1;		
-	case GL_DRAW_BUFFER8: return 1;	
-	case GL_DRAW_BUFFER9: return 1;	
-	case GL_DRAW_BUFFER10: return 1;									
+	case GL_DRAW_BUFFER7: return 1;
+	case GL_DRAW_BUFFER8: return 1;
+	case GL_DRAW_BUFFER9: return 1;
+	case GL_DRAW_BUFFER10: return 1;
 	case GL_EDGE_FLAG: return 1;
 	case GL_EDGE_FLAG_ARRAY: return 1;
 	case GL_EDGE_FLAG_ARRAY_BUFFER_BINDING: return 1;
@@ -397,7 +397,7 @@ int getGetSize(GLenum type){
 
 int getTypeSize(GLenum type) {
 
-	switch (type) 
+	switch (type)
 	{
 	case GL_BYTE: 			    		return sizeof(GLbyte);
 	case GL_UNSIGNED_BYTE:  	    	return sizeof(GLubyte);
@@ -427,7 +427,7 @@ int getTypeSize(GLenum type) {
 int getLightParamSize(GLenum type) {
 
 	//TODO: fill in missing types
-	switch (type) 
+	switch (type)
 	{
 	case GL_AMBIENT: 					return 4;
 	case GL_DIFFUSE:  					return 4;
@@ -457,7 +457,7 @@ int getLightParamSize(GLenum type) {
 int getFormatSize(GLenum format) {
 
 	//LOG("getFormatSize(%d)\n", format);
-	
+
 	//passed in the number of objects
 	if(format == 1 || format == 2 || format == 3 || format == 4){
 		return format;
@@ -465,10 +465,10 @@ int getFormatSize(GLenum format) {
 
 /*
 	int bpp = 1;
-	    
-	if(format == GL_BGR || format == GL_RGB) 
+
+	if(format == GL_BGR || format == GL_RGB)
 		bpp = 3;
-	else if(format == GL_RGBA || format == GL_BGRA) 
+	else if(format == GL_RGBA || format == GL_BGRA)
 		bpp = 4;
 	else
 		LOG("DEFAULTED getFormatSize\n");
@@ -487,9 +487,9 @@ int getFormatSize(GLenum format) {
 	case GL_LUMINANCE: return 1;
 	case GL_LUMINANCE_ALPHA: return 1;
 	case GL_DEPTH_COMPONENT: return 1;
-	
+
 	default:LOG("DEFAULTED getFormatSize\n"); return 4;
-	}                
+	}
 
 	return 4;
 }

@@ -50,10 +50,10 @@ bool ExecModule::makeWindow()
 		LOG( "Video initialization failed: %s\n", SDL_GetError());
 		return false;
 	}
-	
-	
+
+
 	string title = "ClusterGL Output - " + gConfig->id;
-	
+
 	LOG("Set caption: %s\n", title.c_str());
 
 	SDL_WM_SetCaption(title.c_str(), title.c_str());
@@ -66,14 +66,14 @@ bool ExecModule::makeWindow()
 	videoFlags  = SDL_OPENGL;
 	videoFlags |= SDL_GL_DOUBLEBUFFER;
 	videoFlags |= SDL_HWPALETTE;
-	//videoFlags |= SDL_NOFRAME; 
-								 
+	//videoFlags |= SDL_NOFRAME;
+
 	if(videoInfo->hw_available ){
 		videoFlags |= SDL_HWSURFACE;
 	}else{
 		videoFlags |= SDL_SWSURFACE;
 	}
-	
+
 	if(videoInfo->blit_hw ){
 		videoFlags |= SDL_HWACCEL;
 	}
@@ -103,8 +103,8 @@ bool ExecModule::makeWindow()
 	//Do this twice - above works for OSX, here for Linux
 	//Yeah, I know.
 	SDL_WM_SetCaption(title.c_str(), title.c_str());
-	
-		
+
+
 	if (GLEW_OK != glewInit()) {
 		LOG("GLEW failed to start up for some reason\n");
 		return false;
@@ -120,9 +120,9 @@ bool ExecModule::makeWindow()
 bool ExecModule::process(vector<Instruction *> *list)
 {
 
-	for(int n=0;n<(int)list->size();n++){		
+	for(int n=0;n<(int)list->size();n++){
 		Instruction *iter = (*list)[n];
-		
+
 		if(iter->id >= 1700 || !mFunctions[iter->id]) {
 			LOG("Unimplemented method %d, bailing out\n", iter->id);
 			return false;
@@ -130,18 +130,18 @@ bool ExecModule::process(vector<Instruction *> *list)
 
 		mCurrentInstruction = iter;
 		currentBuffer = 0;
-		
+
 		//LOG_INSTRUCTION(mCurrentInstruction);
-		
+
 		if(handleViewMode(iter)){
 			continue;
 		}else{
 			mFunctions[iter->id](iter->args);
 		}
 	}
-	
+
 	Stats::count("mod_exec instruction count", list->size());
-	
+
 	return true;
 }
 
@@ -168,7 +168,7 @@ byte *popBuf()
 byte *popBuf(int *len){
 	*len = mCurrentInstruction->buffers[currentBuffer].len;
 	currentBuffer++;
-	return mCurrentInstruction->buffers[currentBuffer-1].buffer;	
+	return mCurrentInstruction->buffers[currentBuffer-1].buffer;
 }
 
 
@@ -221,7 +221,7 @@ static void EXEC_CGLSwapBuffers(byte *commandbuf)
 {
 	//LOG("Swap!\n");
 	SDL_GL_SwapBuffers();
-	
+
 	Stats::increment("Rendered frames");
 }
 
@@ -262,7 +262,7 @@ static void EXEC_glCallLists(byte *commandbuf)
 {
 	GLsizei *n = (GLsizei*)commandbuf;   commandbuf += sizeof(GLsizei);
 	GLenum *type = (GLenum*)commandbuf;  commandbuf += sizeof(GLenum);
-	
+
 	//LOG("glCallLists(%d, %d)\n", *n, *type);
 
 	glCallLists(*n, *type, (const GLvoid *)popBuf());
@@ -283,11 +283,11 @@ static void EXEC_glDeleteLists(byte *commandbuf)
 static void EXEC_glGenLists(byte *commandbuf)
 {
 	GLsizei *range = (GLsizei*)commandbuf;   commandbuf += sizeof(GLsizei);
-	
+
 	GLint r = glGenLists(*range);
-	
+
 	//LOG("glGenLists(%d) -> %d\n", *range, r);
-	
+
 	pushRet(r);
 }
 
@@ -1856,7 +1856,7 @@ static void EXEC_glMaterialfv(byte *commandbuf)
 
 	int i =0;
 	glMaterialfv(*face, *pname, (const GLfloat *)popBuf(&i));
-	
+
 	//LOG("glMaterialfv: %d\n", i);
 }
 
@@ -1998,12 +1998,12 @@ static void EXEC_glTexImage2D(byte *commandbuf)
 	GLenum *format = (GLenum*)commandbuf;    commandbuf += sizeof(GLenum);
 	GLenum *type = (GLenum*)commandbuf;  commandbuf += sizeof(GLenum);
 	GLboolean *null = (GLboolean*)commandbuf;  commandbuf += sizeof(GLboolean);
-	
+
 	int l =0;
 	byte *pixels = popBuf(&l);
-	
+
 	//LOG("glTexImage2D: %d/%d, %d %d\n", *width, *height, l, hash(pixels, l));
-		
+
 	//if(*null) {
 		glTexImage2D(*target, *level, *internalformat, *width, *height, *border, *format, *type, (const GLvoid *)pixels);
 	//}
@@ -2011,7 +2011,7 @@ static void EXEC_glTexImage2D(byte *commandbuf)
 	//	LOG("183 no pixels!\n");
 	//	glTexImage2D(*target, *level, *internalformat, *width, *height, *border, *format, *type, NULL);
 	//}
-	
+
 }
 
 
@@ -3278,11 +3278,11 @@ static void EXEC_glDrawArrays(byte *commandbuf)
 	GLenum *mode = (GLenum*)commandbuf;  commandbuf += sizeof(GLenum);
 	GLint *first = (GLint*)commandbuf;   commandbuf += sizeof(GLint);
 	GLsizei *count = (GLsizei*)commandbuf;   commandbuf += sizeof(GLsizei);
-	
+
 	//LOG("Starting glDrawArrays(%d, %d, %d)\n", *mode, *first, *count);
-	
+
 	glDrawArrays(*mode, *first, *count);
-	
+
 	//LOG("ok\n");
 }
 
@@ -3293,15 +3293,15 @@ static void EXEC_glDrawElements(byte *commandbuf)
 	GLenum *mode = (GLenum*)commandbuf;  commandbuf += sizeof(GLenum);
 	GLsizei *count = (GLsizei*)commandbuf;   commandbuf += sizeof(GLsizei);
 	GLenum *type = (GLenum*)commandbuf;  commandbuf += sizeof(GLenum);
-	
+
 	int l = 0;
-	
+
 	const GLvoid * buf = (const GLvoid *)popBuf(&l);
-		
+
 	//LOG("About to glDrawElements(%d, %d, %d)\n", l, *count, hash((byte *)buf, l));
-	
+
 	glDrawElements(*mode, *count, *type, buf);
-	
+
 	//LOG("Done!\n");
 }
 
@@ -3372,9 +3372,9 @@ static void EXEC_glNormalPointer(byte *commandbuf)
 	GLenum *type = (GLenum*)commandbuf;  commandbuf += sizeof(GLenum);
 	GLsizei *stride = (GLsizei*)commandbuf;  commandbuf += sizeof(GLsizei);
 	GLboolean *null = (GLboolean*)commandbuf;    commandbuf += sizeof(GLsizei);
-	
+
 	if(*null){
-		glNormalPointer(*type, *stride, (const GLvoid *)NULL);	
+		glNormalPointer(*type, *stride, (const GLvoid *)NULL);
 	}else{
 		glNormalPointer(*type, *stride, (const GLvoid *)popBuf());
 	}
@@ -3413,7 +3413,7 @@ static void EXEC_glColorPointer(byte *commandbuf)
 		glColorPointer(*size, *type, *stride, buf);
 		//LOG("glColorPointer size: %d, %d, %d\n", *size, i, hash((byte *)buf, i));
 		//LOG("glColorPointer size: %d, bytes: %d\n", *size, i);
-		
+
 		//LOG("EXEC glColorPointer(%d, %s, %d) - %d\n", *size, getGLParamName(*type), *stride, i);
 	}
 }
@@ -3432,9 +3432,9 @@ static void EXEC_glTexCoordPointer(byte *commandbuf)
 		const GLvoid * buf =  (const GLvoid *)popBuf(&i);
 		glTexCoordPointer(*size, *type, *stride, buf);
 		//LOG("glTexCoordPointer size: %d, bytes: %d\n", *size, i);
-		
+
 		//LOG("EXEC glTexCoordPointer(%d, %s, %d) - %d\n", *size, getGLParamName(*type), *stride, i);
-		
+
 	}
 }
 
@@ -3454,7 +3454,7 @@ static void EXEC_glVertexPointer(byte *commandbuf)
 		const GLvoid * buf =  (const GLvoid *)popBuf(&i);
 		glVertexPointer(*size, *type, *stride, buf);
 		//LOG("glVertexPointer size: %d, bytes: %d\n", *size, i);
-		
+
 		//LOG("EXEC glVertexPointer(%d, %s, %d) - %d\n", *size, getGLParamName(*type), *stride, i);
 	}
 }
@@ -9057,7 +9057,7 @@ static void EXEC_glGetPointervEXT(byte *commandbuf)
 {
 	GLenum *pname = (GLenum*)commandbuf;     commandbuf += sizeof(GLenum);
 	LOG("Warning: Called glGetPointervEXT, using glGetPointerv instead\n");
-	
+
 	glGetPointerv(*pname, (GLvoid **)popBuf());
 }
 

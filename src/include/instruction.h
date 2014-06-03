@@ -21,11 +21,11 @@ class Instruction
 {
 public:
 	Instruction();
-	void clear();	
+	void clear();
 	bool compare(Instruction *other);
 	Instruction *copy();
 	bool needReply();
-	
+
 	uint16_t id;
 	byte arglen;
 

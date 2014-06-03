@@ -11,7 +11,7 @@ static bool bHasInit = false;
 bool bIsIntercept = false;
 
 Config *gConfig = NULL;
- 
+
 /*******************************************************************************
 	Entry if invoked as a renderer output
 *******************************************************************************/
@@ -21,23 +21,23 @@ int App::run(int argc, char **argv)
 		fprintf(stderr,"usage: %s <window id>\n", argv[0]);
 		exit(0);
 	}
-	
+
 	if(bHasInit) {
 		return 1;
 	}
-	
+
 	init(false, argv[1]);
-	
-	//Set up the module chain	
+
+	//Set up the module chain
 	mModules.push_back(new NetSrvModule());
-	mModules.push_back(new DeltaDecodeModule()); 	
+	mModules.push_back(new DeltaDecodeModule());
 	//mModules.push_back(new DuplicateBufferDecodeModule());
 	mModules.push_back(new ExecModule());
 
-	while( tick() ){ 
+	while( tick() ){
 		//run tick() until we decide to bail
 	}
-	
+
 	return 0;
 }
 
@@ -52,25 +52,25 @@ bool App::run_shared(string src)
 	if(bHasInit) {
 		return false;
 	}
-	
+
 	//Load the config file
 	init(true, "capture");
-	
+
 	//Make sure we're launching from the correct source. This means that mixing
 	//SDL and Xorg works properly when we're fork()'ing. ie: OpenArena
 	if(src != gConfig->interceptMode){
-		LOG("Ignored spurious launch (possibly fork()?): %s vs %s\n", 
+		LOG("Ignored spurious launch (possibly fork()?): %s vs %s\n",
 			src.c_str(), gConfig->interceptMode.c_str());
 		LOG("If this is intended, change 'interceptMode' to '%s' in the config file\n", src.c_str());
 		return false;
 	}
-	
+
 	for(int i=0;i<gConfig->numOutputs;i++){
-		LOG("Found output: %s:%d\n", 
-				gConfig->outputAddresses[i].c_str(), 
+		LOG("Found output: %s:%d\n",
+				gConfig->outputAddresses[i].c_str(),
 				gConfig->outputPorts[i]);
 	}
-	
+
 	//Write our pid out
 	if(gConfig->capturePidFile != ""){
 		FILE *f = fopen(gConfig->capturePidFile.c_str(), "w");
@@ -79,12 +79,12 @@ bool App::run_shared(string src)
 		fwrite(pid, strlen(pid), 1, f);
 		fclose(f);
 	}
-	
-			
+
+
 	//Set up the module chain
 	mModules.push_back(new AppModule(""));
 	mModules.push_back(new DeltaEncodeModule());
-	//mModules.push_back(new DuplicateBufferEncodeModule()); 	
+	//mModules.push_back(new DuplicateBufferEncodeModule());
 	mModules.push_back(new NetClientModule());
 
 	//Return control to the parent process.
@@ -98,12 +98,12 @@ void App::init(bool shared, const char *id)
 {
 	printf("**********************************************\n");
 	printf(" ClusterGL(%s - %s)\n", bIsIntercept ? "intercept" : "renderer", id);
-	printf("**********************************************\n");	
+	printf("**********************************************\n");
 
 	bIsIntercept = shared;
-	
+
 	char *configFile = (char *)"/etc/cgl.conf";
-	
+
 	if(getenv("CGL_CONFIG_FILE")){
 		configFile = getenv("CGL_CONFIG_FILE");
 	}
@@ -120,9 +120,9 @@ void App::init(bool shared, const char *id)
 bool App::tick()
 {
 	//LOG("tick()\n");
-		
+
 	vector<Instruction *> *thisFrame = new vector<Instruction *>();
-	
+
 	if(gConfig->enableStats){
 		stats_begin();
 	}
@@ -130,17 +130,17 @@ bool App::tick()
 	//Go through each module and process the frame
 	for(int i=0;i<(int)mModules.size();i++) {
 		Module *m = mModules[i];
-		
+
 		m->setListResult(thisFrame);
-		
+
 		if( !m->process(thisFrame) ) {
 			LOG("Failed to process frame (in %d), bailing out\n", i);
 			return false;
 		}
-		
+
 		//TODO: handle bytes and such
 		thisFrame = m->resultAsList();
-		
+
 		if(!thisFrame){
 			LOG("!thisFrame\n");
 			return false;
@@ -157,9 +157,9 @@ bool App::tick()
 				//LOG("need a reply %d\n", i);
 				//LOG_INSTRUCTION(iter);
 				mModules[0]->reply(iter, i);
-				
+
 				iter->buffers[i].needReply = false;
-				
+
 				Stats::increment("Pipeline stalls due to replies");
 			}
 		}
@@ -169,7 +169,7 @@ bool App::tick()
 	if(gConfig->enableStats){
 		stats_end();
 	}
-	
+
 	for(int i=0;i<(int)thisFrame->size();i++){
 		bool mustdelete = false;
 		Instruction *iter = (*thisFrame)[i];
@@ -186,7 +186,7 @@ bool App::tick()
 	thisFrame->clear();
 
 	delete thisFrame;
-	
+
 	//LOG("tick() done\n");
 
 	return true;
@@ -196,7 +196,7 @@ bool App::tick()
 	Begin stats run
 *******************************************************************************/
 void App::stats_begin(){
-	
+
 }
 
 /*******************************************************************************

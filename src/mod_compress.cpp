@@ -26,7 +26,7 @@ int Compression::compress(void *input, int nByte)
 {
 	void *output = getBuf();
 	int compressingMethod = gConfig->networkCompression;
-	
+
 	uLongf CompBuffSize = 0;
 	if(compressingMethod == 1)
 		CompBuffSize = (uLongf)(nByte + (nByte * 0.1) + 12);
@@ -53,7 +53,7 @@ int Compression::compress(void *input, int nByte)
 				if(ret == Z_MEM_ERROR){
 					LOG("ERROR compressing: memory error\n");
 				}else if(ret == Z_BUF_ERROR){
-					LOG("ERROR compressing: buffer error\n");					
+					LOG("ERROR compressing: buffer error\n");
 				}else if(ret == Z_STREAM_ERROR){
 					LOG("ERROR compressing: compressLevel not (1-9), %d\n", compressLevel);
 				}
@@ -77,7 +77,7 @@ int Compression::decompress(void *dest, int destLen, int sourceLen)
 {
 	void *source = getBuf();
 	int compressingMethod = gConfig->networkCompression;
-	
+
 	uLongf newSource = sourceLen;
 	uLongf newDest = destLen;
 	int ret = 0;
