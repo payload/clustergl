@@ -8,13 +8,21 @@ clean:
 	$(MAKE) clean -C runtime/tests
 		
 test:
+	export CGL_CONFIG_FILE=./my.conf && \
 	cd runtime && \
 	gnome-terminal -e "./cgl-render left" && \
 	gnome-terminal -e "./cgl-render center" && \
 	gnome-terminal -e "./cgl-render right" && \
 	sleep 1 && \
 	gnome-terminal -e "./cgl-capture tests/row/row"
-	
+
+test-single:
+	export CGL_CONFIG_FILE=./single.conf && \
+	cd runtime && \
+	gnome-terminal -e "./cgl-render center" && \
+	sleep 1 && \
+	gnome-terminal -e "./cgl-capture tests/row/row"
+
 debugrender:
 	cd runtime && \
 	gdb -ex run -quiet --args ./cgl-render left
