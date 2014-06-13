@@ -54,7 +54,7 @@ Instruction mInstructionsTwo[MAX_INSTRUCTIONS];
 Instruction *mInstructions = mInstructionsOne;
 
 //the number of instructions so far
-int iInstructionCount = 0;
+size_t iInstructionCount = 0;
 
 //the buffer we are currently using
 //(there are a possible 3 buffers per message)
@@ -124,7 +124,7 @@ bool AppModule::process(vector<Instruction *> *list){
 
 	//LOG("%d instructions\n", iInstructionCount);
 
-	for(int i=0;i<iInstructionCount;i++){
+	for(size_t i=0;i<iInstructionCount;i++){
 		list->push_back(&mInstructions[i]);
 		//LOG_INSTRUCTION(&mInstructions[i]);
 	}
@@ -151,7 +151,7 @@ bool AppModule::sync(){
 void pushOp(uint16_t opID){
 
 	if(iInstructionCount >= MAX_INSTRUCTIONS){
-		LOG("Out of instruction space (%d)!\n", iInstructionCount);
+		LOG("Out of instruction space (%ld)!\n", iInstructionCount);
 		//force the frame
 		if(!theApp->tick()){
 			exit(1);
