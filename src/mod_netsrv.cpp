@@ -4,8 +4,8 @@
 
 #include "main.h"
 
-const int recieveBufferSize = 268435456;
-//const int recieveBufferSize = sizeof(Instruction) * MAX_INSTRUCTIONS;
+const size_t recieveBufferSize = 1024 * 1024 * 1024;
+//const size_t recieveBufferSize = sizeof(Instruction) * MAX_INSTRUCTIONS;
 uint32_t iRecieveBufPos = 0;
 uint32_t bytesRemaining = 0;
 
