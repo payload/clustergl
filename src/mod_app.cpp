@@ -229,26 +229,16 @@ void waitForReturn(){
 	}
 }
 
-#define PUSHPARAM(type) \
-	void pushParam(type data){ \
-		memcpy((void *)mCurrentArgs, (const void *)&data, sizeof(type)); \
-		mCurrentArgs += sizeof(type); \
-		mCurrentInstruction->arglen += sizeof(type); \
-	}
-
-PUSHPARAM(GLfloat);
-PUSHPARAM(GLuint);
-PUSHPARAM(GLint);
-//PUSHPARAM(GLenum);
-//PUSHPARAM(GLsizei);
-PUSHPARAM(GLbyte);
-//PUSHPARAM(GLboolean);
-PUSHPARAM(GLdouble);
-
-//On Apple, this needs to be handled differently
-#ifdef __APPLE__
-PUSHPARAM(GLhandleARB);
-#endif
+template<typename type> void pushParam(type data) {
+    memcpy((void *)mCurrentArgs, (const void *)&data, sizeof(type));
+    mCurrentArgs += sizeof(type);
+    mCurrentInstruction->arglen += sizeof(type);
+    if (mCurrentInstruction->arglen > MAX_ARG_LEN) {
+        LOG("arglen exceeds maximum\n");
+        LOG_INSTRUCTION(mCurrentInstruction);
+        throw "";
+    }
+}
 
 //size.cpp
 extern int getTypeSize(GLenum type);
