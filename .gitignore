@@ -10,3 +10,7 @@
 *.lai
 *.la
 *.a
+
+screenshot-*.bmp
+*.trace
+*.kdev4
