@@ -2,9 +2,8 @@
 # ClusterGL main makefile
 #################################
 
-NAME    = cgl
-render  = ../runtime/$(NAME)-render
-capture = ../runtime/lib$(NAME)-capture.so
+render  = ../runtime/cgl-render
+capture = ../runtime/libcgl-capture.so
 
 SOURCES := $(wildcard *.cpp)
 OBJS    := $(patsubst %.cpp, %.o, $(SOURCES))
@@ -39,12 +38,15 @@ all: $(SOURCES:.cpp=.d) $(render) $(capture)
 -include $(SOURCES:.cpp=.d)
 
 # compile targets
-$(render): $(OBJS_APP)
+cgl-render: $(OBJS_APP)
 
-$(capture): LDFLAGS += --shared
-$(capture): $(OBJS_SHARED)
+libcgl-capture.so: LDFLAGS += --shared
+libcgl-capture.so: $(OBJS_SHARED)
+
+../runtime/%: %
+	cp $< $@
 
 # other targets
 clean:
-	rm -f *.o *.d $(capture) $(render)
+	rm -f *.o *.d $(capture) $(render) cgl-render libcgl-capture.so
 
