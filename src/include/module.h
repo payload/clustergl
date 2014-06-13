@@ -84,8 +84,8 @@ class NetSrvModule : public Module
     int mSocket;
     BufferedFd *mClientSocket;
 
-    int internalRead(byte *input, int nByte);
-    int internalWrite(byte *input, int nByte);
+    uint32_t internalRead(byte *input, uint32_t nByte);
+    uint32_t internalWrite(byte *input, uint32_t nByte);
 
     void recieveBuffer(void);
 

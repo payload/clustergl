@@ -79,7 +79,7 @@ bool NetSrvModule::process(vector<Instruction *> *list)
 
 	iInstructionCount = 0;
 
-	int len = internalRead((byte *)&num, sizeof(uint32_t));
+	uint32_t len = internalRead((byte *)&num, sizeof(uint32_t));
 	if(len != sizeof(uint32_t) ) {
 		LOG("Read error\n");
 		return false;
@@ -106,8 +106,8 @@ bool NetSrvModule::process(vector<Instruction *> *list)
 		}
 		*/
 
-		int l = sizeof(Instruction);
-		int r = internalRead((byte *)i, l);
+		uint32_t l = sizeof(Instruction);
+		uint32_t r = internalRead((byte *)i, l);
 		if(r != l) {
 			LOG("Read error 2 (%d, %d)\n", r, l);
 			return false;
@@ -117,12 +117,14 @@ bool NetSrvModule::process(vector<Instruction *> *list)
 
 		//Now see if we're expecting any buffers
 		for(int n=0;n<3;n++) {
-			int l = i->buffers[n].len;
+			uint32_t l = i->buffers[n].len;
 
 			//LOG("%d - %d\n", n, l);
 
 			if(l > 0) {
-				i->buffers[n].buffer = (byte *) malloc(l);
+				if (!(i->buffers[n].buffer = (byte *) malloc(l))) {
+                    LOG("%d %d\n", l, l / 1024 / 1024);
+                }
 				i->buffers[n].needClear = true;
 				i->buffers[n].needRemoteReply = i->buffers[n].needReply;
 
@@ -185,7 +187,7 @@ bool NetSrvModule::sync()
 	Net Server Run Decompression
 *********************************************************/
 
-int NetSrvModule::internalRead(byte *input, int nByte)
+uint32_t NetSrvModule::internalRead(byte *input, uint32_t nByte)
 {
 	//LOG("Read: %d (%d)\n", nByte, bytesRemaining);
 
@@ -232,10 +234,10 @@ void NetSrvModule::recieveBuffer(void)
 	Net Server Run Compression
 *********************************************************/
 
-int NetSrvModule::internalWrite(byte *input, int nByte)
+uint32_t NetSrvModule::internalWrite(byte *input, uint32_t nByte)
 {
 	//LOG("internalWrite %d\n", nByte);
-	int ret = mClientSocket->write(input, nByte);
+	uint32_t ret = mClientSocket->write(input, nByte);
 	//LOG("done!\n");
 	return ret;
 }
