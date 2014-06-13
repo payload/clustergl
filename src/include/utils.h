@@ -3,7 +3,7 @@
 *******************************************************************************/
 
 #define CGL_REPEAT_INSTRUCTION 1498
-#define MAX_INSTRUCTIONS 500000
+const size_t MAX_INSTRUCTIONS = 1024 * 1024;
 
 //Quick LOG hack that we can make a proper log system out of later
 #define LOG printf("[\e[32m%20s:%5d\e[m]\t", __FILE__, __LINE__); printf
