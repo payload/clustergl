@@ -25,7 +25,7 @@ test-single:
 
 debugrender:
 	cd runtime && \
-	gdb -ex run -quiet --args ./cgl-render left
+	gdb -ex run -quiet --args ./cgl-render center
 
 
 install:
@@ -35,4 +35,4 @@ install:
 	@cp runtime/cgl.conf /etc/ -v
 
 uninstall:
-	@rm -fv /usr/bin/cgl-render /usr/bin/cgl-capture /usr/lib/libcgl-capture.so /etc/cgl.conf 
+	@rm -fv /usr/bin/cgl-render /usr/bin/cgl-capture /usr/lib/libcgl-capture.so /etc/cgl.conf
