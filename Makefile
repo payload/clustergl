@@ -3,6 +3,9 @@ all:
 	$(MAKE) -C src
 	$(MAKE) -C runtime/tests
 
+compile-src:
+	$(MAKE) -C src
+
 clean:
 	$(MAKE) clean -C src
 	$(MAKE) clean -C runtime/tests
@@ -16,12 +19,8 @@ test:
 	sleep 1 && \
 	gnome-terminal -e "./cgl-capture tests/row/row"
 
-test-single:
-	export CGL_CONFIG_FILE=./single.conf && \
-	cd runtime && \
-	gnome-terminal -e "./cgl-render center" && \
-	sleep 1 && \
-	gnome-terminal -e "./cgl-capture tests/row/row"
+debug-anholt: compile-src
+	./tests/anholt.sh
 
 debugrender:
 	cd runtime && \
