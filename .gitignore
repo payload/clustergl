@@ -14,3 +14,9 @@
 screenshot-*.bmp
 *.trace
 *.kdev4
+*.d
+runtime/tests/drawelements/drawelements
+runtime/tests/lesson05/lesson05
+runtime/tests/texture/texture
+runtime/cgl-render
+src/cgl-render
